@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help</title>
+
+    <link rel = "icon" href = "help_icon.jpg" type = "image/x-icon">
+
+    <style>
+        img{
+            height: 450px;
+            width: 750px;
+        }
+
+        /* Style the button that is used to open and close the collapsible content */
+.collapsible {
+  background-color: #eee;
+  color: #444;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+}
+
+/* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
+.active, .collapsible:hover {
+  background-color: #ccc;
+}
+
+/* Style the collapsible content. Note: hidden by default */
+.content {
+  padding: 0 18px;
+  max-height: 0;
+  overflow: hidden;
+  background-color: #f1f1f1;
+  transition: max-height 0.2s ease-out;
+}
+
+.collapsible:after {
+  content: '\02795'; /* Unicode character for "plus" sign (+) */
+  font-size: 13px;
+  color: white;
+  float: right;
+  margin-left: 5px;
+}
+
+.active:after {
+  content: "\2796"; /* Unicode character for "minus" sign (-) */
+}
+    </style>
+</head>
+
+<body>
+    <b><H1 style="text-align: center;">BFT Help Page</H1></b>
+
+    <button type="button" class="collapsible"><b>1. Path Invalid - please select valid path</b></button>
+    <div class="content">
+        <li>Make sure that the data is stored in a file named <b>log</b> with <b>.txt</b> format.</li>
+        <li >Always make sure that while selecting the folder path for data collecting, it should be in a format given below.</li>
+        <p>&nbsp &nbsp &nbsp Assume <b>Test Server 2</b> is a valid path.</p>
+        <br>
+        &nbsp &nbsp &nbsp<img src="img1.png" alt="Image">
+        <p>&nbsp &nbsp &nbsp Here, <b>Test Server 2</b> folder contains different folders such as BFT 1, BFT 2, etc.</p>
+        <li>The log.txt file should be contained in the BFT 1, BFT 2, etc. folders, NOT the <b>Test Server 2</b> folder </li>
+        <br>
+        &nbsp &nbsp &nbsp<img src="img2.png" alt="Image">
+    </div>
+
+    <button type="button" class="collapsible"><b>2. Invalid format - Date not found</b></button>
+    <div class="content">
+    <li>The data inserted in the log.txt file should be in the format of a CSV File. Some valid data files shown below:</li>
+    <br>
+    &nbsp &nbsp &nbsp<img src="img3.png" alt="Image">
+    <br>
+    &nbsp &nbsp &nbsp<img src="img4.png" alt="Image"> 
+    <li>Every log.txt file should contain a <b>Date</b> attribute.</li>
+    <li>The <b>Date</b> data should be given in the <b>DD:MM:YYYY</b> format.</li>
+    <br>
+    &nbsp &nbsp &nbsp<img src="img5.png" alt="Image">
+
+    <script>
+      var coll = document.getElementsByClassName("collapsible");
+      var i;
+  
+for (i = 0; i < coll.length; i++) {
+  coll[i].addEventListener("click", function() {
+    this.classList.toggle("active");
+    var content = this.nextElementSibling;
+    if (content.style.maxHeight){
+      content.style.maxHeight = null;
+    } else {
+      content.style.maxHeight = content.scrollHeight + "px";
+    }
+  });
+}
+
+
+    </script>
+    
+ 
+
+    
+    
+
+    
+</body>
+</html>
