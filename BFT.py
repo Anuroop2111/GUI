@@ -17,8 +17,10 @@ import csv
 root = Tk()
 root.geometry('1300x600')
 root.title("  Data Log Analyser")
-root.iconbitmap('icon_gui.ico')
-
+try:  
+  root.iconbitmap('icon_gui.ico')
+else:
+  pass
 root.grid_rowconfigure(0, weight=1)
 root.grid_columnconfigure(1, weight=1)
 
