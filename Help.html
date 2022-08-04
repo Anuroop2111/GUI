@@ -8,13 +8,13 @@
 
     <link rel = "icon" href = "help_icon.jpg" type = "image/x-icon">
 
-    <style>
-        img{
-            height: 450px;
-            width: 750px;
-        }
+<style>
+img{
+  height: 450px;
+  width: 750px;
+    }
 
-        /* Style the button that is used to open and close the collapsible content */
+/* Style the button that is used to open and close the collapsible content */
 .collapsible {
   background-color: #eee;
   color: #444;
@@ -52,7 +52,8 @@
 .active:after {
   content: "\2796"; /* Unicode character for "minus" sign (-) */
 }
-    </style>
+</style>
+
 </head>
 
 <body>
@@ -82,31 +83,49 @@
     <li>The <b>Date</b> data should be given in the <b>DD:MM:YYYY</b> format.</li>
     <br>
     &nbsp &nbsp &nbsp<img src="img5.png" alt="Image">
+    </div>
 
-    <script>
-      var coll = document.getElementsByClassName("collapsible");
-      var i;
+    <button type="button" class="collapsible"><b>3. How to open Report file?</b></button>
+    <div class="content">
+      <ui>There are two methods to open Report file:</ui>
+      <br>
+      <br>
+      <li>Double click the row to open the report file.</li>
+      <li>Single click the row, and click "Open Report" button</li>
+      <br>
+      <ui>These consitions should be satisfied for opening the file:</ui>
+      <br>
+      <br>
+      <li>The log.txt file should contain <b>Report Path</b> attribute, where the file path is given.</li>
+      <li>The report file should exist.</li>
+    </div>
+
+    <button type="button" class="collapsible"><b>4. Data Color Codes</b></button>
+    <div class="content">
+      <ui>There are 3 different color combinations in the Data rows.</ui>
+      <br>
+      <br>
+      <li><span style="background-color: lightgreen;"> Green</span>: If the Result is <b>PASS</b></li>
+      <li><span style="background-color: red;" >Red</span>: If the Result is <b>FAIL</b></li>
+      <li><span style="background-color: violet;"> Violet</span>: If the Result contains anything other than <b>PASS</b> or <b>FAIL</b></li>
+    </div>
+
+  <script>
+    var coll = document.getElementsByClassName("collapsible");
+    var i;
   
-for (i = 0; i < coll.length; i++) {
-  coll[i].addEventListener("click", function() {
-    this.classList.toggle("active");
-    var content = this.nextElementSibling;
-    if (content.style.maxHeight){
-      content.style.maxHeight = null;
-    } else {
-      content.style.maxHeight = content.scrollHeight + "px";
-    }
-  });
-}
-
-
-    </script>
-    
- 
-
-    
-    
-
-    
+  for (i = 0; i < coll.length; i++) {
+    coll[i].addEventListener("click", function() {
+      this.classList.toggle("active");
+      var content = this.nextElementSibling;
+      if (content.style.maxHeight){
+        content.style.maxHeight = null;
+      } else {
+        content.style.maxHeight = content.scrollHeight + "px";
+      }
+    });
+  }
+  </script>
+     
 </body>
 </html>

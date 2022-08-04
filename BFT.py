@@ -1,114 +1,38 @@
-# Solved, # Bug-0, Not able to save file, when the window is closing. Solved using Path.txt
-# Solution is to do the file saving normally, but only if the that selected path have log file. This can be achieved by using a function just before saving the file, to check True or False.
 
-# Solved # Bug-1, when the gui is opened, a folder (with log) can be created and it reflects in the gui, but when it is deleted, the last button in the gui gets duplicated.
-# Solved # Bug-2, mousescroll of left window also fired when the mouse is scrolled in the right window. Soled using Enter and Leave event.
-# Solved # Bug-3, even when we select a path with folders that doesn't contain any log files, the path gets successfully added; it shows no data, but the prev button will still be visible. But, if the gui is closed in such a position, it won't load up again.
-# Solved using 'folders_check' function iteratively and using file_check instead of file_real inside the function message_()
-# Bug-4, when the gui is opened for a long time, it glitches or freezes for some time. Need to implement threading to solve this problem.
-# Implement-1, Need to add dowwnloadable excel to treeview
-# Bug-5, when the log.txt is updated when the gui is still on, the button position change gets updated, but the treeview labels gets updated only when search/reset of click any other button and come back.
-# Solved # Bug-6 continuation of Bug-1, when test server 2 is selected with fewer buttons than test server 1, the old buttons didn,t get deleted.
-# 1,6 solved using a introducing a list that contains all the buttons in the path, and deleting as required.
-# Implement-2, Need to add search functionality to the bft buttons.
-# Implement-3, Need to add highlight button feature to the bft buttons.
-# Implement-4, Need to style the entire display.
-# Solved # Bug-7, the treeview headers should refelect the headers in the csv file, if any change occurs. Solved using a list to append data.
-# Solved # Bug-8, when trying to implement color code the treeview doesn't show up.
-# Bug-9, Have to remove the infinite loop by implementing a Data Generate button.
-
-import os
-import pandas as pd
-import datetime
-from datetime import datetime
+# Import the library tkinter
 from tkinter import *
 from tkinter import ttk
+import webbrowser
+import os
+import os.path
 from tkinter import messagebox
 from tkinter.messagebox import showinfo
 from tkinter import filedialog
-import threading
-from openpyxl.workbook import Workbook # To create spreadsheets
-from openpyxl import load_workbook # To access spreadsheets
+import pandas as pd
+import datetime
+from datetime import datetime
 import csv
-import webbrowser
-from PIL import Image,ImageTk
+  
+# Create a GUI app
+root = Tk()
+root.geometry('1300x600')
+root.title("  Data Log Analyser")
+root.iconbitmap('icon_gui.ico')
 
-root =Tk()
-root.geometry('1200x500')
+root.grid_rowconfigure(0, weight=1)
+root.grid_columnconfigure(1, weight=1)
 
-#root.grid_rowconfigure(1, weight=1)
-#root.grid_columnconfigure(0, weight=1)
-
-main_Panel = PanedWindow(root, background="black")
-root.grid_rowconfigure(0, weight=50)
-root.grid_columnconfigure(0, weight=50)
-main_Panel.grid(row=0,column=0, sticky="nsew") # pack(side="top", fill="both", expand=True)
-
-# Create two frames
-left_pane = Frame(main_Panel, background="grey", width=150)
-right_pane = Frame(main_Panel, background="grey", width=200)
-main_Panel.add(left_pane)
-main_Panel.add(right_pane)
-
-#status_bar = Label(main_Panel,text="test",bd=1,relief=SUNKEN,anchor=W)
-#main_Panel.add(status_bar)
-
-# Create canvas for the left frame.
-left_canvas = Canvas(left_pane,background="grey",width=275)
-left_canvas.pack(side=LEFT,fill=BOTH, expand=1) #grid(rowspan=1000,columnspan=100,sticky="nsew") # May be try with pack after adding frame
-#left_pane.grid_rowconfigure(1, weight=1)
-#left_pane.grid_columnconfigure(1, weight=1)
-
-# Scrollbar for bft/canvas
-btf_scroll = ttk.Scrollbar(left_pane, orient=VERTICAL, command = left_canvas.yview)
-btf_scroll.pack(side=RIGHT,fill=Y)  #grid(rowspan=10,column=5)
-
-# Configure canvas
-left_canvas.configure(yscrollcommand=btf_scroll.set)
-left_canvas.bind('<Configure>',lambda e: left_canvas.configure(scrollregion = left_canvas.bbox("all")))
-#left_canvas.bind("<MouseWheel>", _on_mousewheel)
-
-def _bound_to_mousewheel(event):
-    left_canvas.bind_all("<MouseWheel>", _on_mousewheel)
-
-def _unbound_to_mousewheel(event):
-    left_canvas.unbind_all("<MouseWheel>")
-
-def _on_mousewheel(event):
-    left_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
-
-left_canvas.bind('<Enter>', _bound_to_mousewheel)
-left_canvas.bind('<Leave>', _unbound_to_mousewheel)
-
-# Create frame for left canvas
-Inner_frame = Frame(left_canvas,background="grey", width=150)
-Inner_frame.grid_columnconfigure(0, weight=1)
-#Inner_frame.grid_columnconfigure(1, weight=1)
-#Inner_frame.grid_columnconfigure(2, weight=1)
-#Inner_frame.grid_columnconfigure(3, weight=1)
-#Inner_frame.grid_columnconfigure(5, weight=1)
-#Inner_frame.grid_columnconfigure(5, weight=1)
-#Inner_frame.grid_columnconfigure(6, weight=1)
-#Inner_frame.grid_columnconfigure(7, weight=1)
-
-button_bft = Button(Inner_frame)
-
-Inner_frame.bind('<Enter>',lambda e:left_canvas.bind("<MouseWheel>", _on_mousewheel))
-
-# Adding the inner frame to a window in the canvas.
-left_canvas.create_window((0,0), window=Inner_frame, anchor="nw")
-
-
-label_1 = Label(Inner_frame,text="Recently Updated BFTs",font=("Times", 15))
-label_1.grid(row=0,column=0,pady=10)
-
-#label_1.bind("<Button-1>", lambda e:
-#callback("https://guihelp.coolove.repl.co/"))
-
+# Create menu
 my_menu = Menu(root)
 root.config(menu=my_menu)
 
 # Creating menu item
+file_menu = Menu(my_menu,tearoff=0)
+my_menu.add_cascade(label="File", menu = file_menu)
+file_menu.add_command(label="Open folder", command=lambda:[Delete_Button(),select_path(),clear()])
+file_menu.add_separator()
+file_menu.add_command(label="Quit", command=root.quit)
+
 help_menu = Menu(my_menu,tearoff=0)
 my_menu.add_cascade(label="Help", menu = help_menu)
 help_menu.add_command(label = "Get Help", command=lambda: callback("https://guihelp2.coolove.repl.co/"))
@@ -117,16 +41,75 @@ help_menu.add_command(label = "Get Help", command=lambda: callback("https://guih
 def callback(url):
    webbrowser.open_new_tab(url)
 
-#help_menu.bind("<Button-1>", lambda e:
-#callback("https://guihelp.coolove.repl.co/"))
+# Frame left
+frame_left = Frame(root,background="grey", width=355,highlightbackground="black", highlightthickness=3)
+frame_left.grid(row=0,column=0,sticky="nsew")
 
+#frame_left.grid_rowconfigure(0, weight=1)
+frame_left.grid_rowconfigure(1, weight=5)
+frame_left.grid_rowconfigure(2, weight=1)
+
+# Frame browse
+frame_browse = Frame(frame_left,background="grey", padx=15, pady=15)
+frame_browse.grid(row=0, column=0, sticky="nsew")
+
+# Frame button
+frame_buttons = LabelFrame(frame_left, text="Recently Updated", bg="grey", fg="black",labelanchor="n", font = ("Times", "15", "bold"),highlightbackground="black",padx=10)
+frame_buttons.grid(row=1,column=0, sticky="nsew") 
+
+frame_buttons.grid_rowconfigure(1, weight=1)
+frame_buttons.grid_columnconfigure(0, weight=1)
+
+# Canvas for Frame Butoon
+canvas_buttons = Canvas(frame_buttons,background="#3C6478",width=300,borderwidth=0,highlightthickness=0)
+canvas_buttons.grid(row=1,column=0, sticky="nsew")
+#canvas_buttons.grid_rowconfigure(1, weight=1)
+#canvas_buttons.grid_columnconfigure(0, weight=1)
+
+# Scrollbar for Canvas
+canvas_scroll = ttk.Scrollbar(canvas_buttons, orient=VERTICAL, command = canvas_buttons.yview)
+canvas_scroll.pack(side=RIGHT,fill=Y) 
+
+# Configure canvas
+canvas_buttons.configure(yscrollcommand=canvas_scroll.set)
+canvas_buttons.bind('<Configure>',lambda e: canvas_buttons.configure(scrollregion = canvas_buttons.bbox("all")))
+
+# Frame inside Canvas
+Frame_in_canvas = Frame(canvas_buttons,background="#3C6478", width=250,borderwidth=0,highlightthickness=0)
+Frame_in_canvas.pack(side=LEFT, fill=BOTH, expand=TRUE)
+
+# Configuring mousewheel movement of scrollbar
+def _bound_to_mousewheel(event):
+    canvas_buttons.bind_all("<MouseWheel>", _on_mousewheel)
+
+def _unbound_to_mousewheel(event):
+    canvas_buttons.unbind_all("<MouseWheel>")
+
+def _on_mousewheel(event):
+    canvas_buttons.yview_scroll(int(-1*(event.delta/120)), "units")
+
+canvas_buttons.bind('<Enter>', _bound_to_mousewheel)
+canvas_buttons.bind('<Leave>', _unbound_to_mousewheel)
+
+button_bft = Button(Frame_in_canvas)
+#Frame_in_canvas.bind('<Enter>',lambda e:canvas_buttons.bind("<MouseWheel>", _on_mousewheel))
+canvas_buttons.create_window((0,0), window=Frame_in_canvas, anchor="nw")
+
+# Frame dropdown
+frame_dropdown = Frame(frame_left,background="grey", padx=15, pady=15)
+frame_dropdown.grid(row=2, column=0, sticky="nsew")
+
+# Frame right
+frame_right = LabelFrame(root, text="Log Data", bg="#3C6478", padx=15, pady=15, width=200,labelanchor="n",borderwidth=0,highlightbackground="black", highlightthickness=3, font = ("Times", "24", "bold"))
+frame_right.grid(row=0, rowspan=100, column=1, sticky="nsew")
+
+# main 
 p=''
 Btn_to_del = {}
 flag = False
 buttons = []
 selected_button = None
 last_bg = None
-#wb = Workbook() # Creating workbook instance
 
 try: # Checking if path.txt exists
     file_real = open("Path.txt","r")
@@ -137,27 +120,21 @@ except: # If path.txt doesn't exist, it is created.
 
 def check_folders(check_path):
     global file_final
-    #print('check_folders called.')
     global p
-    #print(f'p inside check_folders: {p}')
     folder_check_list = [] # Folder check list
     folder_path_check_list = [] # Folder path check list
     folder_path_log_check_list = [] # List containing log file path. 
     folders_check = os.listdir(check_path) # Folders
-    #print(folders_check)
+
     for folder in folders_check:
         folder_check_list.append(folder)
         folder_path = os.path.join(check_path,folder)
         folder_path_check_list.append(folder_path)
 
-    #print(folder_path_check_list)
-
     for path in folder_path_check_list:
         if (os.path.isfile(os.path.join(path,'log.txt'))):
             path_log = os.path.join(path,'log.txt')
             folder_path_log_check_list.append(path_log)
-            #time_mod = os.stat(path_log).st_mtime
-            #time_list.append(time_mod)
         else:
             folder_path_check_list.remove(path)
             folder_check_list.remove(os.path.basename(path))
@@ -170,19 +147,15 @@ def check_folders(check_path):
         file_final.write(p)
         file_final.close
         Delete_Button()
-        #select_path()
     else:
-        #print('Check_folders --> Open_path called.')
         Open_path(p)
 
 def select_when_empty():
     global p
     global file_final
     path_mainDir = filedialog.askdirectory()
-    #(path)
     path_mainDir = path_mainDir.replace("/","\\")
     p = path_mainDir
-    #print(p)
     if p=='':
         messagebox.showerror("Path Invalid", "Please select valid path")
         drop.configure(state="disabled")
@@ -191,7 +164,6 @@ def select_when_empty():
         file_final.write(p)
         file_final.close
     else:
-        # Save it in another fn or variable.
         file_final = open("Path.txt","w")
         file_final.write(p)
         file_final.close
@@ -204,64 +176,27 @@ def message_():
     file_check = open("Path.txt","r")
     p = file_check.read()
     file_check.close()
-    #print(f'p inside message after reading: {p}')
     if p=='':      
         file_check = open("Path.txt","r")
         if os.stat("Path.txt").st_size == 0:
             file_check.close
-            #print('message_called')
-            #messagebox.showinfo("Path empty", "Please select path.")
-            #select_path()
-            select_when_empty()
-            
-        else:
-            #print("message --> get_folder_check2 called 1")
-            #p = file_check.read()
-            #get_folder_check2(p)
-            pass
-            
-    else:
-        #print("message --> get_folder_check2 called 2")
-        #get_folder_check2(p)
-        pass
-
+            select_when_empty()          
 
 def select_path():
-    #print('select_path called.')
-    #global q
-    #print('select_path called')
+    drop.configure(state="disabled")
+    Open_Report_button["state"] = "disable"
     global path_mainDir
     global p
     path_mainDir = filedialog.askdirectory( initialdir=p)
-    
-    #(path)
     path_mainDir = path_mainDir.replace("/","\\")
-    #print('Dir just called')
-    #print(path_mainDir)
-    #if p!=path_mainDir: # Here, add a function such that, the old buttons get deleted and new buttons are added.
-        #print('Difference')
-        #print(f'p = {p}') # p is the previous directory path
-        #print(f'path_mainDir = {path_mainDir}') # path_mainDir is the new directory path.
-        #print(get_folder_check2(p)) # Prev path dict
-        #print('*'*100)
-        #print(get_folder_check2(path_mainDir)) # New path dict
-        #Delete_Button(get_folder_check2(p))
-    #print(p)
-    #q = p # Storing the prev path
     p = path_mainDir # Storing the new path
-    #print(p)
     if p=='':
         messagebox.showerror("Path Invalid", "Please select valid path")
         drop.configure(state="disabled")
-        #print('p is empty')
-        #print('select_path_called')
-        #select_path()
     else:
-        #print('check_folders_called')
         check_folders(p)
         
 def Open_path(p):
-    #global file_real
     global file_check
     file_check = open("Path.txt","w")
     file_check.write(p) # Saving the path to the file when the window is closed.  
@@ -270,8 +205,6 @@ def Open_path(p):
     file_double_check = open("Path.txt","r")
     p = file_double_check.read()
     file_double_check.close()
-    #print(f'p inside Open_path after reading: {p}')
-    #print("Open_path --> get_folder called.") 
     get_folder(p)
 
 def get_folder_check2(path_of_DIr):
@@ -282,7 +215,6 @@ def get_folder_check2(path_of_DIr):
         folder_list2.append(folder)
         folder_path = os.path.join(path_of_DIr,folder)
         folder_path_list2.append(folder_path)
-    #return Time_list_Create(folder_path_list2,folder_list2)
 
 def get_folder(Dirpath_to_get_folder): # List of all folders in main dir, and each of their paths are stored here.
     global folder_path_list
@@ -294,19 +226,11 @@ def get_folder(Dirpath_to_get_folder): # List of all folders in main dir, and ea
         folder_list.append(folder)
         folder_path = os.path.join(Dirpath_to_get_folder,folder)
         folder_path_list.append(folder_path)
-    #print("Inside get_folder")
-    #print(f'folder_path_list = {folder_path_list}')
-    #print(f'folder_list = {folder_list}')
     Delete_Button()
     Create_button(Time_list_Create(folder_path_list,folder_list))
-    #print('get_folder called')
 
 def Gen_Data():
-    #print("HI")
     global p
-    #print(f"p inside Gen_Data: {p}")
-    #print("Gen_Data called.")
-    #Delete_Button()
     get_folder(p)
     
 def Time_list_Create(path_list,fold_list):
@@ -317,27 +241,14 @@ def Time_list_Create(path_list,fold_list):
     dict_bft_logpath = {} # Dictionary with BFT name as key and its log path as value.
     time_list=[]
     path_log_list = []
-    #print('*'*250)
-    #print("Inside Time_list_Create")
-    #print(f'path_list = {path_list}')
     for path in path_list:
-        #print('Inside for loop')
-        #print(f'path_list = {path_list}')
-        #print(f'path = {path}')
         if (os.path.isfile(os.path.join(path,'log.txt'))):
             path_log = os.path.join(path,'log.txt')
             path_log_list.append(path_log)
             time_mod = os.stat(path_log).st_mtime
             time_list.append(time_mod)
-            #print(f'time_mod = {time_mod}')
         else:
-            #path_list.remove(path)
             fold_list.remove(os.path.basename(path))
-    #print(f'path_list 2 = {path_list}')
-    #print(f'path log list = {path_log_list}')
-    #print(f'fold_list = {fold_list}')
-    #print(f'Time list = {time_list}')
-    #Both the above lists are the same throughout the operation.
 
     time_sorted_list_descending = sorted(time_list,reverse=True)
 
@@ -346,28 +257,18 @@ def Time_list_Create(path_list,fold_list):
         a = time_sorted_list_descending.index(Time_ID)+1 # This gives the index of the time1,time2,etc. in the list. This ID should be used to order the buttons accordingly. This ID is in INT format. eg. time 1 id is 3, then bft 1 should come at 3rd position.
         #print(a) #[5,3,1,4,2,6]
         B_list.append(a)
-    #print(f'B_list = {B_list}')
-    #print(fold_list)
 
     for i in range(len(B_list)):
         dict_pos_bft[B_list[i]] = fold_list[i]
     #print(dict_pos_bft) # {5: BFT 1, 3: BFT 2, 1: BFT 3, 4: BFT 4, 2: BFT 5, 6: BFt 6}
 
     for i in range(len(fold_list)):
-        #print(f'fold_list 2 = {fold_list}')
         dict_bft_logpath[fold_list[i]] = path_log_list[i]
-    #print(f'dict_bft_logpath = {dict_bft_logpath}')
     
     #print(B_list) # This gives the location of BFT : 1,2,3,4,5,6 in order, that should be reflected in the button.
     return dict_pos_bft
-    #Create_button(dict_pos_bft)
-    #destroy_button(dict_pos_bft)
-    #Create_button(dict_pos_bft)
-    #print('Called')
-    #root.update()
 
 def change_selected_button(button):
-    #global button
     global selected_button, last_bg
     if selected_button is not None:
         selected_button.config(bg=last_bg)
@@ -390,23 +291,18 @@ def Create_button(dict_pos_bft):
     #global button
     global button_bft
     for key in list(dict_pos_bft.keys()):  
-        button_bft = Button(Inner_frame, text=dict_pos_bft.get(key),  command=lambda key = key: BFT(dict_pos_bft.get(key)), width=13,height=3)
+        button_bft = Button(Frame_in_canvas, text=dict_pos_bft.get(key),  command=lambda key = key: BFT(dict_pos_bft.get(key)), width=10,height=3)
         button_bft.grid(row=key+1,column=0,pady=5,padx=20)
         
         buttons.append(button_bft)
-    #button_bft.config(command=lambda button_bft=button_bft: change_selected_button(button_bft))
     root.after(4000,Gen_Data)
-    #root.after(2000,message_)  
 
 def Delete_Button():
-    #print("Delete called")
     global buttons
     for b in buttons:
-        #print(b)
         b.destroy()
 
 def BFT(Button_name):
-    #public clicked
     global dict_bft_logpath
     global AddDataPath
     AddDataPath = dict_bft_logpath.get(Button_name)
@@ -419,6 +315,7 @@ def BFT(Button_name):
 
 def clear():
     Download_button["state"] = "disable"
+    Open_Report_button["state"] = "disable"
     # Clear the treeview
     for record in my_tree.get_children():
         my_tree.delete(record)
@@ -450,54 +347,47 @@ def Selected(event):
         Reset_search()
         Download_button["state"] = "normal"
 
-#Generate_button  = Button(right_pane,text="Generate Data",command=Gen_Data)
-#Generate_button.pack(pady=10)
-
 # dropdown Box
 options =['Search/Reset','<10 Days', '>10 & <30 Days', '>30 and <100 Days', '>100 Days']
 #public clicked
 clicked = StringVar()
 clicked.set(options[0])
 
-drop = OptionMenu(right_pane,clicked, *options, command=Selected)
+drop = OptionMenu(frame_dropdown,clicked, *options, command=Selected)
 drop.pack(pady=10)
 drop.configure(state="disabled")
 
 # ttk style Configuration
-style = ttk.Style()
+style = ttk.Style() 
 style.theme_use('default') # Pick a theme
 style.configure("Treeview",background="#D3D3D3",foreground='Black',rowheight=25,fieldbachground='#D3D3D3') # configure Treeview colour
 style.map('Treeview',background=[('selected','#347083')]) # Change selected colour
-'''
-def remove_many():
-    x=my_tree.selection()
-    for record in x:
-        my_tree.delete(record)
-'''
 
 def TreeCol(path_to_log):
     global tup_headers
     # Finding Tree Columns
     df = pd.read_csv(path_to_log)
     list_headers = []
-    #print(df.columns)
     for i in df.columns:
         list_headers.append(i)
-        #print(i)
-    #list_headers.append('Day_counter')
     tup_headers = tuple(list_headers)
     if "Date" not in tup_headers:
         messagebox.showerror("Invalid format", "Date not found")
-        #Create_Tree(())
         drop.configure(state="disabled")
         Download_button["state"] = "disable"
+        Open_Report_button["state"] = "disable"
     else:
-          
-        #print(f'tup_headers = {tup_headers}') 
         Create_Tree(tup_headers)
-      
+
+def Open_report():
+    global Report_path
+    try:
+        os.startfile(Report_path)
+    except:pass
+    
+
 # Creating a treeview frame
-tree_frame = Frame(right_pane)
+tree_frame = Frame(frame_right)
 tree_frame.pack(pady=10,padx=10,fill=BOTH, expand=1)
 
 # Create treeview scrollbar
@@ -515,12 +405,9 @@ tree_scroll_y.config(command=my_tree.yview)
 tree_scroll_x.config(command=my_tree.xview)
 
 def Create_Tree(col):
-    print('Called Create_tree')
-    #print(f'CReating tree, col = {col}') 
     col_list = list(col)
     col_list.append('Counter')
     col = tuple(col_list)
-    #print(col)
 
     #Defining treeview column
     my_tree['columns'] = col
@@ -528,7 +415,10 @@ def Create_Tree(col):
     # Format treeview column
     my_tree.column("#0",width=0,stretch=NO) # Phantom column
     for i in tup_headers:
-        my_tree.column(i, anchor=CENTER,width=120,minwidth=100)
+        if i=="Report Path":
+           my_tree.column(i, anchor=CENTER,width=500,minwidth=200)
+        else: 
+            my_tree.column(i, anchor=CENTER,width=120,minwidth=120)
     my_tree.column("Counter",anchor=CENTER,width=0,stretch=NO)
 
     # Defining treeview heading
@@ -541,27 +431,50 @@ def timestamp(dt):
     epoch = datetime.utcfromtimestamp(0)
     return (dt - epoch).total_seconds() * 1000.0
 
-def AddData(val):
+'''
+def new(event):
     
+'''
+def OnSingleClick(event):
+    global Report_path
+    try:
+        item = my_tree.identify('item',event.x,event.y)
+        #print("you clicked on", my_tree.item(item,"values"))
+        val_of_row = my_tree.item(item,"values")
+        for i,v in enumerate(tup_headers):
+            if v=="Report Path":
+                Report_path = val_of_row[i]
+        if (os.path.exists(Report_path)):
+            Open_Report_button["state"] = "normal"
+        else:
+            Open_Report_button["state"] = "disable"
+    except:
+        pass
+
+
+def OnDoubleClick(event):
+    try:
+        item = my_tree.identify('item',event.x,event.y)
+        #print("you clicked on", my_tree.item(item,"values"))
+        val_of_row = my_tree.item(item,"values")
+        for i,v in enumerate(tup_headers):
+            if v=="Report Path":
+                Report_path = val_of_row[i]
+        if (os.path.exists(Report_path)):
+            Open_report()  
+    except:
+        pass
+    #messagebox.showerror("File Invalid", "FIle not found")
+            
+def AddData(val):
     global tup_headers
     global AddDataPath
     global Download_button
-    #print(AddDataPath)
-    #global tup
     df = pd.read_csv(AddDataPath) 
     for i in range(len(df)):
         count_v=0
         data_list = []
         for v in tup_headers:
-            
-             #print('*'*100)
-            #print(v)
-            #print('*'*100)
-            #if v=='Start_Time':
-                #print(v)
-                #data=datetime.strptime(df.loc[i,v],'%d/%m/%Y %H:%M:%S') # Time in datetime object
-            #elif v=='End_Time':
-                #data=datetime.strptime(df.loc[i,v],'%d/%m/%Y %H:%M:%S') # Time in datetime object
             if v=='Date':
                 time_date=datetime.strptime(df.loc[i,v],'%d/%m/%Y')
                 currentDT = datetime.now().strftime("%Y/%m/%d")
@@ -571,11 +484,24 @@ def AddData(val):
                 Timediff_final = Milli_final1 - Milli_final2
                 data_count = Timediff_final/(1000*60*60*24)
                 data = df.loc[i,v]
+            elif v=="Report Path":
+                data = df.loc[i,v]
+                #print("going to print path")
+                #print(data)
             else:
                 data = df.loc[i,v]
-            
-            #print(f'Data = {data}')
 
+            if v=="Result":
+                try:
+                    if data=="PASS":
+                        status = "pass"
+                    elif data=="FAIL":
+                        status = "fail"
+                    else:
+                        status = "unknown"
+                except:
+                    pass
+            
             if v=="Date":
                 Day_count = data_count 
                 if Day_count<=10:
@@ -586,46 +512,97 @@ def AddData(val):
                     Value = '30:100'
                 else:
                     Value = '100:'
+            
             data_list.append(data)
-        #if count_v>=0:
-        #my_tree.insert(parent='',index='end',iid=i,text='', values=data_list) # need to add a counter instead of i, which will be constat throughout fpor each row.
-            #count_v=count_v+1
-        #print(data_list)
 
         # Create Striped row tags
         my_tree.tag_configure('allrow',background="white")
         #my_tree.tag_configure('oddrow',background="white")
         #my_tree.tag_configure('evenrow',background="lightblue")
-        my_tree.tag_configure('lessthan10',background='lightgreen')
-        my_tree.tag_configure('greaterthan10_lessthan30',background="lightblue")
-        my_tree.tag_configure('greaterthan30_lessthan100',background='orange')
-        my_tree.tag_configure('greaterthan100',background='red')
+        #my_tree.tag_configure('lessthan10',background='lightgreen')
+        #my_tree.tag_configure('greaterthan10_lessthan30',background="lightblue")
+        #my_tree.tag_configure('greaterthan30_lessthan100',background='orange')
+        #my_tree.tag_configure('greaterthan100',background='red')
+        my_tree.tag_configure('pass',background='lightgreen')
+        my_tree.tag_configure('fail',background='red')
+        my_tree.tag_configure('unknown',background='violet')
 
         data_list.append(data_count)
-        #print(data_list)
-        if (val!=''):
-            if(Value==val):
-                data_to_append = data_list
-                if (val=='0:10'):
-                    my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append, tags=('lessthan10',))
-                elif (val=='10:30'):
-                    my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append, tags=('greaterthan10_lessthan30',))
-                elif (val=='30:100'):
-                    my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append, tags=('greaterthan30_lessthan100',))
-                else:
-                    my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append, tags=('greaterthan100',))
 
-        else:
-            # Adding Data to treeview column
-            data_to_append = data_list # Creating a temporary tuple
-            if(Value=='0:10'):
-                my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append, tags=('lessthan10',))
-            elif(Value=='10:30'):
-                my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append, tags=('greaterthan10_lessthan30',))
-            elif(Value=='30:100'):
-                my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append, tags=('greaterthan30_lessthan100',))
+        if (status=="pass"):
+            if (val!=''):
+                if(Value==val):
+                    data_to_append = data_list
+                    if (val=='0:10'):
+                        my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append, tags=("pass",))
+                    elif (val=='10:30'):
+                        my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append,tags=("pass",) )
+                    elif (val=='30:100'):
+                        my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append,tags=("pass",) )
+                    else:
+                        my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append,tags=("pass",) )
             else:
-                my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append, tags=('greaterthan100',))
+                # Adding Data to treeview column
+                data_to_append = data_list # Creating a temporary tuple
+                if(Value=='0:10'):
+                    my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append,tags=("pass",) )
+                elif(Value=='10:30'):
+                    my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append,tags=("pass",) )
+                elif(Value=='30:100'):
+                    my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append,tags=("pass",))
+                else:
+                    my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append,tags=("pass",))
+
+        elif(status=="fail"):
+            if (val!=''):
+                if(Value==val):
+                    data_to_append = data_list
+                    if (val=='0:10'):
+                        my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append, tags=("fail",))
+                    elif (val=='10:30'):
+                        my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append,tags=("fail",) )
+                    elif (val=='30:100'):
+                        my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append,tags=("fail",) )
+                    else:
+                        my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append,tags=("fail",) )
+            else:
+                # Adding Data to treeview column
+                data_to_append = data_list # Creating a temporary tuple
+                if(Value=='0:10'):
+                    my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append,tags=("fail",) )
+                elif(Value=='10:30'):
+                    my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append,tags=("fail",) )
+                elif(Value=='30:100'):
+                    my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append,tags=("fail",))
+                else:
+                    my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append,tags=("fail",))
+        else:
+            if (val!=''):
+                if(Value==val):
+                    data_to_append = data_list
+                    if (val=='0:10'):
+                        my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append, tags=("unknown",))
+                    elif (val=='10:30'):
+                        my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append,tags=("unknown",) )
+                    elif (val=='30:100'):
+                        my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append,tags=("unknown",) )
+                    else:
+                        my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append,tags=("unknown",) )
+            else:
+                # Adding Data to treeview column
+                data_to_append = data_list # Creating a temporary tuple
+                if(Value=='0:10'):
+                    my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append,tags=("unknown",) )
+                elif(Value=='10:30'):
+                    my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append,tags=("unknown",) )
+                elif(Value=='30:100'):
+                    my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append,tags=("unknown",))
+                else:
+                    my_tree.insert(parent='',index='end',iid=i,text='', values=data_to_append,tags=("unknown",))
+
+
+    my_tree.bind("<Double-1>", OnDoubleClick)
+    my_tree.bind("<Button-1>", OnSingleClick)
 
 def Select_path_for_excel():
     path_to_save_file = filedialog.asksaveasfilename(initialfile = 'Untitled.xlsx',
@@ -638,21 +615,25 @@ def to_excell_():
     global excel_name
 
     cols = tup_headers # Your column headings here
+    #print(f'Cols = {cols}')
     path_excel_txt = 'ExcelTemp.txt'
     excel_name = Select_path_for_excel()
-    #print('*'*100)
-    #print(excel_name)
-    #print('*'*100)
     list_of_tree_rows = []
     with open(path_excel_txt, "w", newline='') as new_file:
         csvwriter = csv.writer(new_file, delimiter=',')
         for row_id in my_tree.get_children(): # The serial number of the rows
-            #print(row_id)
+            #print(f'row_id = {row_id}')
             row = my_tree.item(row_id,'values')
+            last_element_index = len(row)-1
+            row = row[:last_element_index]
+            #print(f'row = {row}')
             list_of_tree_rows.append(row)
         list_of_tree_rows = list(map(list,list_of_tree_rows))
+        #print(f'list of tree rows = {list_of_tree_rows}')
         list_of_tree_rows.insert(0,cols)
+        #print(f'list of tree rows after insert = {list_of_tree_rows}')
         for row in list_of_tree_rows:
+            #print(f'row in list of tree rows = {row}')
             csvwriter.writerow(row)
     save_excel()
 
@@ -664,14 +645,17 @@ def save_excel():
     df.to_excel(writer,'sheet1')
     writer.save()
 
-Download_button = Button(right_pane,text="Download",comman=to_excell_)
-Download_button.pack(pady=10)
+Open_Report_button = Button(frame_right,text="Open Report",command=Open_report)
+Open_Report_button.pack(side=LEFT,pady=10,padx=(550,0))
+Open_Report_button["state"] = "disable"
+
+Download_button = Button(frame_right,text="Download",command=to_excell_)
+Download_button.pack(side=LEFT,pady=10,padx=10)
 Download_button["state"] = "disable"
 
-browse_button = Button(Inner_frame, text='Browse', command=lambda:[Delete_Button(),select_path(),clear()])
-browse_button.grid(row=0, column=2,padx=10)
+browse_button = Button(frame_browse, text='Browse', command=lambda:[Delete_Button(),select_path(),clear()])
+browse_button.pack(pady=10)
 
-#root.update()
 message_()
 Gen_Data()   
 root.mainloop()
