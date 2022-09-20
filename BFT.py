@@ -1,4 +1,3 @@
-
 # Import the library tkinter
 from tkinter import *
 from tkinter import ttk
@@ -17,10 +16,8 @@ import csv
 root = Tk()
 root.geometry('1300x600')
 root.title("  Data Log Analyser")
-try:  
-  root.iconbitmap('icon_gui.ico')
-else:
-  pass
+root.iconbitmap('icon_gui.ico')
+
 root.grid_rowconfigure(0, weight=1)
 root.grid_columnconfigure(1, weight=1)
 
